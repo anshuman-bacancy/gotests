@@ -3,18 +3,28 @@ package main
 import "fmt"
 
 func hasUniqueSubSquares(board [][]int) bool {
-  s := make([][]int, 0)
-  for row := 0; row < len(board); row += 3 {
-    for col := 0; col < len(board); col += 3 {
-      //fmt.Print(board[row:row+3][col:col+3], " ")
-      s = board[row:row+3]
-      //k := s[col:col]
-      row += 3
-    }
-    fmt.Println(s, " ")
-    fmt.Println()
+  subSquares := getSubSquares(board)
+  for _, square := range subSquares {
+    fmt.Println("Checking sub board .....", square)
+    isDup := checkDuplicate(square)
+    if isDup == true { return false }
   }
-  return false
+  return true
+}
+
+func getSubSquares(board [][]int) [][]int {
+  subSquares := make([][]int, 0)
+  endIdx := 3
+  for i := 0; i < len(board); i += 3 {
+    limit := 9
+    col := getCols(board, i, endIdx)
+    for j := 0; j < len(col); j += 9 {
+      subSquares = append(subSquares, col[j:limit])
+      limit += 9
+    }
+    endIdx += 3
+  }
+  return subSquares
 }
 
 func checkDuplicate(arr []int) bool {
@@ -28,6 +38,15 @@ func checkDuplicate(arr []int) bool {
   return false
 }
 
+func getCols(board[][]int, startIdx, endIdx int) (cols []int) {
+  cols = make([]int, 0)
+  for _, row := range board {
+    cols = append(cols, row[startIdx:endIdx]...)
+  }
+  return
+}
+
+
 func getColumn(board [][]int, columnIndex int) (column []int) {
   column = make([]int, 0)
   for _, row := range board {
@@ -36,11 +55,11 @@ func getColumn(board [][]int, columnIndex int) (column []int) {
   return
 }
 
-func sudokuValid(board [][]int) (string, bool) {
+func sudokuValid(board [][]int) bool {
   var validBoard bool
 
   // check if empty 
-  if len(board) == 0 { return "Empty board", false }
+  if len(board) == 0 { return false }
 
   allRows := make([]int, 0)
   allCols := make([]int, 0)
@@ -50,7 +69,7 @@ func sudokuValid(board [][]int) (string, bool) {
     col := getColumn(board, idx)
     IsColumnDuplicate := checkDuplicate(col)
     allCols = append(allCols, col...)
-    //fmt.Println(IsColumnDuplicate, IsRowDuplicate)
+
     if IsRowDuplicate == true || IsColumnDuplicate == true {
       validBoard = false
     } else {
@@ -58,20 +77,25 @@ func sudokuValid(board [][]int) (string, bool) {
     }
   }
 
-  _ = hasUniqueSubSquares(board)
+  UniqueSubBoards := hasUniqueSubSquares(board)
+  if UniqueSubBoards == true {
+    validBoard = true
+  } else {
+    validBoard = false
+  }
 
-  return "Invalid board!", validBoard
+  return validBoard
 }
 
 func print(board [][]int) {
   for i := 0; i < len(board); i++ {
-    //if i == 3 || i == 6 {
-      //fmt.Println(" ")
-    //}
+    if i == 3 || i == 6 {
+      fmt.Println(" ")
+    }
     for j := 0; j < len(board); j++ {
-      //if (j == 3) || (j == 6) {
-        //fmt.Print(" ")
-      //}
+      if (j == 3) || (j == 6) {
+        fmt.Print(" ")
+      }
       fmt.Print(board[i][j], " ")
     }
     fmt.Println()
@@ -90,10 +114,29 @@ func main() {
     {2,8,7,4,1,9,6,3,5},
     {3,4,5,2,8,6,1,7,9},
   }
-  fmt.Println("Actual board")
+
+  /*
+  board := [][]int{
+    {6,3,4,6,7,8,9,1,2},
+    {6,7,2,1,9,5,3,4,8},
+    {1,9,8,3,4,2,5,6,7},
+    {8,5,9,7,6,1,4,2,3},
+    {4,2,6,8,5,3,7,9,1},
+    {7,1,3,9,2,4,8,5,6},
+    {9,6,1,5,3,7,2,8,4},
+    {2,8,7,4,1,9,6,3,5},
+    {3,4,5,2,8,6,1,7,9},
+  }
+  */
+
+  fmt.Println("Sudoku Board")
   print(board)
   fmt.Println()
-  isValid, message := sudokuValid(board)
-  fmt.Println(isValid, message)
+  isValid := sudokuValid(board)
+  if isValid == true {
+    fmt.Println("Valid Sudoku Board")
+  } else {
+    fmt.Println("Invalid Sudoku Board")
+  }
 }
 
